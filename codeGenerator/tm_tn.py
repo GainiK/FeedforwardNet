@@ -88,6 +88,8 @@ def generate():
 		w_buff_arr.append(w_buff)
 		total = in_buff + out_buff + w_buff
 		total_arr.append(total)
+	print("Tr_Tc")
+	print(Tr_Tc)
 	print("in_buf")
 	print(in_buff_arr)
 	print("w_buf")
