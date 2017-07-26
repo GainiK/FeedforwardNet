@@ -90,6 +90,41 @@ def params_values(s, arr2):
     	values = data.split()
     	return values
 
+def max_stride_kernel(arr):
+	layers_order = params_values("Network Structure", arr)
+	nn_in_data_size_fc_values = params_values("nn_in_data_size_fc", arr)
+	nn_channel_size_pooling_values = params_values("nn_channel_size_pooling", arr)
+	nn_stride_pooling_values = params_values("nn_stride_pooling", arr)  
+	nn_stride_conv_values = params_values("nn_stride_conv", arr)  
+	nn_channel_size_conv_values = params_values("nn_channel_size_conv", arr)
+	nn_channel_size_fc_values = params_values("nn_channel_size_fc", arr) 
+	for n in nn_in_data_size_fc_values:
+		nn_stride_conv_values.append(n)
+	for n1 in nn_channel_size_fc_values:
+		nn_channel_size_conv_values.append(n1)
+	nn_stride_conv_values = [int(string) for string in nn_stride_conv_values]
+	nn_channel_size_conv_values = [int(string) for string in nn_channel_size_conv_values]
+	nn_channel_size_pooling_values = [int(string) for string in nn_channel_size_pooling_values]
+	nn_stride_pooling_values = [int(string) for string in nn_stride_pooling_values]
+	max_s = nn_stride_conv_values[0]
+	for s in nn_stride_conv_values:
+		if s > max_s:
+			max_s = s
+	max_k = nn_channel_size_conv_values[0]
+	for ch in nn_channel_size_conv_values:
+		if ch > max_k:
+			max_k = ch
+	max_s_pool = nn_stride_pooling_values[0]
+	for s_pool in nn_stride_pooling_values:
+		if s_pool > max_s_pool:
+			max_s_pool = s_pool
+	max_k_pool = nn_channel_size_pooling_values[0]
+	for ch_pool in nn_channel_size_pooling_values:
+		if ch_pool > max_k_pool:
+			max_k_pool = ch_pool
+	return [max_s, max_k, max_s_pool, max_k_pool]	
+
+
 def extraction(arr):
 	arr1 = []
 	arr2 = []	
@@ -111,14 +146,16 @@ def extraction(arr):
         nn_channel_size_fc_values = params_values("nn_channel_size_fc", arr)  
         nn_out_number_fc_values = params_values("nn_out_number_fc", arr)
 	nn_local_size_lrn_values = params_values("nn_local_size_lrn", arr)
-	
+	nn_in_data_size_fc_values = params_values("nn_in_data_size_fc", arr)
+
 	arr1.append(layers_order)
 	arr2.append("layers_order")
 	
 	n = len(nn_in_data_size_conv_values) + len(nn_in_number_fc_values)
 	arr1.append(str(n))
 	arr2.append("n")
-
+	arr1.append(nn_in_data_size_fc_values)
+	arr2.append("nn_in_data_size_fc")
 	arr1.append(nn_in_number_conv_values)
 	arr2.append("nn_in_number_conv")
 	arr1.append(nn_in_data_size_conv_values)

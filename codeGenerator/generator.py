@@ -82,7 +82,7 @@ def generate_body(arr2, prefix=SEPARATER):
     nn_channel_size_fc_values = prms[prms_str.index("nn_channel_size_fc")]   
     nn_out_number_fc_values = prms[prms_str.index("nn_out_number_fc")]    
     layers_order = prms[prms_str.index("layers_order")]
-
+    nn_in_data_size_fc_values = prms[prms_str.index("nn_in_data_size_fc")]
     if "nn_padding_fc" in prms_str:
 	nn_padding_fc_values = prms[prms_str.index("nn_padding_fc")] 
     else:
@@ -123,9 +123,10 @@ def generate_body(arr2, prefix=SEPARATER):
 		last = nn_out_number_conv_values[conv_counter]
 		last1 = int(math.ceil((int(nn_in_data_size_conv_values[conv_counter]) + int(nn_padding_conv_values[conv_counter]) * 2 -\
                         int(nn_channel_size_conv_values[conv_counter]))/float(nn_stride_conv_values[conv_counter]) + 1));
-		fun = "conv_layer_new_noact"
+		fun = "conv_layer_new"
+		act = 0
 		if layers_order[i+1].lower() == "relu":
-			fun = "conv_layer_new"
+			act = 1
 			strides[0].append(int(nn_stride_conv_values[conv_counter]))
 			kernels[0].append(int(nn_channel_size_conv_values[conv_counter]))
 		else:
@@ -147,7 +148,7 @@ def generate_body(arr2, prefix=SEPARATER):
 				out_shift = "out_shift_" + str(cc)
 			in_n = int(math.ceil(int(nn_in_number_conv_values[conv_counter])/float(nn_group_conv_values[conv_counter])))
 			out_n = int(math.ceil(int(nn_out_number_conv_values[conv_counter])/float(nn_group_conv_values[conv_counter])))
-			function_calls += generate_function_calls1(fun, [str(in_n), str(nn_channel_size_conv_values[conv_counter]), str(out_n), str(last1), str(last1), nn_stride_conv_values[conv_counter], nn_padding_conv_values[conv_counter], in_data, w_port, b_port, out_data, shift_w + "_conv" + str(cc) + "_" + str(k+1), shift_b + "_conv" + str(cc) + "_" + str(k+1), in_shift, out_shift])
+			function_calls += generate_function_calls1(fun, [str(in_n), str(nn_channel_size_conv_values[conv_counter]), str(out_n), str(last1), str(last1), nn_stride_conv_values[conv_counter], nn_padding_conv_values[conv_counter], str(act), in_data, w_port, b_port, out_data, shift_w + "_conv" + str(cc) + "_" + str(k+1), shift_b + "_conv" + str(cc) + "_" + str(k+1), in_shift, out_shift])
 
 			if k + 1 == int(nn_group_conv_values[conv_counter]):
 				if k > 0:
@@ -205,7 +206,8 @@ def generate_body(arr2, prefix=SEPARATER):
 
         elif l.lower() == "innerproduct" or l.lower() == "inner_product":
 		last = nn_out_number_fc_values[fc_counter]
-		fun = "conv_layer_new_noact"
+		fun = "conv_layer_new"
+		act = 0
 		if fc_counter>0:
 			fc_weight += int(nn_in_number_fc_values[fc_counter])*int(nn_in_number_fc_values[fc_counter-1])*\
 				     int(nn_channel_size_fc_values[fc_counter-1])*int(nn_channel_size_fc_values[fc_counter-1])
@@ -218,8 +220,8 @@ def generate_body(arr2, prefix=SEPARATER):
 					break
 		if i + 1 != len(layers_order):
 			if layers_order[i+1].lower() == "relu":
-				fun = "conv_layer_new"
 				
+				act = 1
 				kernels[6].append(int(nn_channel_size_fc_values[fc_counter]))
 			else:
 				
@@ -228,10 +230,9 @@ def generate_body(arr2, prefix=SEPARATER):
 		shifts += prefix + "int " + shift_w + "_fc" + str(fc_counter + 1) + EQUAL + str(fc_weight) + EOS + EOL
 		shifts += prefix + "int " + shift_b + "_fc" + str(fc_counter + 1) + EQUAL + str(fc_bias) + EOS + EOL*2
 
-		fun = "conv_layer_new_noact"
-		if layers_order[i+1].lower() == "relu":
-			fun = "conv_layer_new"
-		function_calls += generate_function_calls1(fun, [nn_in_number_fc_values[fc_counter], nn_channel_size_fc_values[fc_counter], nn_out_number_fc_values[fc_counter], "1", "1", nn_channel_size_fc_values[fc_counter], nn_padding_fc_values[fc_counter], in_data, fc_w_port, fc_b_port, out_data, shift_w + "_fc" + str(fc_counter + 1), shift_b + "_fc" + str(fc_counter + 1), "0", "0"])
+		fun = "conv_layer_new"
+		
+		function_calls += generate_function_calls1(fun, [nn_in_number_fc_values[fc_counter], nn_channel_size_fc_values[fc_counter], nn_out_number_fc_values[fc_counter], "1", "1", nn_in_data_size_fc_values[fc_counter], nn_padding_fc_values[fc_counter], str(act), in_data, fc_w_port, fc_b_port, out_data, shift_w + "_fc" + str(fc_counter + 1), shift_b + "_fc" + str(fc_counter + 1), "0", "0"])
 
                 fc_counter = fc_counter + 1  	
 
